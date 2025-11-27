@@ -1,0 +1,3 @@
+// const cfg = JSON.parse(document.getElementById('tutorial-config').textContent);
+// const perQuestionSeconds = cfg.perQuestionSeconds;
+// // ...rest of the logic...

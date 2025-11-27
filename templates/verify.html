@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Verify Code</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <h1>Enter the code sent to your email</h1>
+    <form method="post" action="{{ url_for('verify_otp') }}">
+      <label>6-digit code <input type="text" name="otp" pattern="\d{6}" maxlength="6" required></label>
+      <button type="submit" class="primary">Verify & Continue</button>
+    </form>
+    <p class="muted">If you didn't receive a code, please check spam or try again later.</p>
+  </main>
+</body>
+</html>

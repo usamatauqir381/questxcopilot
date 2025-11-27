@@ -1,0 +1,6 @@
+question_id,question_text,option_a,option_b,option_c,option_d,correct_option
+T1,This is a tutorial question #1?,A,B,C,D,a
+T2,This is a tutorial question #2?,True,False,, ,a
+T3,This is a tutorial question #3?,Red,Blue,Green,Yellow,b
+T4,This is a tutorial question #4?,1,2,3,4,d
+T5,This is a tutorial question #5?,Yes,No,, ,a

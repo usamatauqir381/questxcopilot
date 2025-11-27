@@ -1,0 +1,6 @@
+question_id,question_text,option_a,option_b,option_c,option_d,correct_option
+Q1,Which data structure uses FIFO order?,Stack,Queue,Tree,Graph,b
+Q2,HTTP is a stateless protocol.,True,False,, ,a
+Q3,Which cloud model is PaaS?,IaaS,PaaS,SaaS,BaaS,b
+Q4,Which SQL command selects data?,INSERT,UPDATE,DELETE,SELECT,d
+Q5,Which is a NoSQL database?,MySQL,PostgreSQL,MongoDB,SQLite,c

@@ -1,0 +1,107 @@
+:root { --bg:#fff; --text:#ffffff; --muted:#6b7280; --primary:#2563eb; --border:#e5e7eb; }
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans","Liberation Sans",sans-serif;color:var(--text);background:var(--bg)} .container{max-width:860px;margin:24px auto;padding:0 16px} h1,h3{margin-top:0} .muted{color:var(--muted)} hr{border:none;border-top:1px solid var(--border);margin:24px 0} fieldset{border:1px solid var(--border);padding:12px} legend{padding:0 8px} label{display:block;margin:8px 0} input[type=text],input[type=email]{width:100%;padding:10px;border:1px solid var(--border);border-radius:6px} .option{display:block;margin:6px 0} button.primary,a.primary{display:inline-block;background:var(--primary);color:#fff;padding:10px 16px;border:none;border-radius:6px;text-decoration:none;cursor:pointer} button.primary:hover,a.primary:hover{opacity:.95}
+body {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  color: #fff;
+  background: #0f0f1a;
+  overflow: hidden;
+}
+
+.background {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, #1a1a2e, #0f0f1a);
+  animation: pulse 6s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { background: radial-gradient(circle at center, #1a1a2e, #0f0f1a); }
+  100% { background: radial-gradient(circle at center, #2a2a4e, #0f0f1a); }
+}
+.stars {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  animation: twinkle 2s infinite alternate;
+}
+
+.container {
+  position: relative;
+  z-index: 2;
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 20px;
+  background: rgba(20, 20, 40, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 0 20px #00f0ff;
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 20px;
+  max-height: 80px;
+  filter: drop-shadow(0 0 10px #00f0ff);
+}
+
+.game-title {
+  text-align: center;
+  font-size: 28px;
+  color: #00f0ff;
+  text-shadow: 0 0 10px #ff00ff;
+}
+
+.instructions {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #00f0ff;
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #ff00ff;
+  box-shadow: 0 0 10px #ff00ff;
+}
+
+.primary {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, #00f0ff, #ff00ff);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #ff00ff;
+}

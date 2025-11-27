@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Tutorial</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>.hidden{display:none}.timer{font-weight:600;color:#b91c1c}</style>
+</head>
+<body>
+  <main class="container">
+    <h1>Tutorial (Practice)</h1>
+    <p class="muted">Answer the 5 tutorial questions. They do not affect your score.</p>
+    <div id="timer" class="timer">Time left: {{ per_question_seconds }}s</div>
+    <form id="tutorialForm" method="post" action="{{ url_for('start_real_test') }}">
+      {% for q in questions %}
+        <section class="question hidden" data-qid="{{ q['id'] }}">
+          <h3>Q{{ loop.index }}. {{ q['text'] }}</h3>
+          {% for k,opt in q['options'].items() %}
+            {% if opt %}
+            <label class="option"><input type="radio" name="{{ q['id'] }}" value="{{ opt }}"> {{ opt }}</label>
+            {% endif %}
+          {% endfor %}
+          <div class="controls"><button type="button" id="nextBtn" class="primary">Next</button></div>
+        </section>
+      {% endfor %}
+    </form>
+  </main>
+  <script>
+    const perQuestionSeconds = {{ per_question_seconds }};
+    const sections = Array.from(document.querySelectorAll('section.question'));
+    const form = document.getElementById('tutorialForm');
+    let idx = 0, timeLeft = perQuestionSeconds, intervalId = null;
+    function showSection(i){sections.forEach(s=>s.classList.add('hidden'));const sec=sections[i];sec.classList.remove('hidden');timeLeft=perQuestionSeconds;document.getElementById('timer').textContent='Time left: '+timeLeft+'s';if(intervalId)clearInterval(intervalId);intervalId=setInterval(()=>{timeLeft--;document.getElementById('timer').textContent='Time left: '+timeLeft+'s';if(timeLeft<=0){next();}},1000);const nextBtn=sec.querySelector('#nextBtn');nextBtn.disabled=true;const inputs=sec.querySelectorAll('input');inputs.forEach(inp=>{inp.addEventListener('input',()=>{const ok=Array.from(inputs).some(x=>x.checked);nextBtn.disabled=!ok;});});nextBtn.addEventListener('click',next,{once:true});}
+    function next(){if(intervalId)clearInterval(intervalId);idx++; if(idx<sections.length){showSection(idx);} else {form.submit();}}
+    if(sections.length>0){showSection(0);} window.onpopstate=function(){history.pushState(null,document.title,location.href);};history.pushState(null,document.title,location.href);
+  </script>
+</body>
+</html>

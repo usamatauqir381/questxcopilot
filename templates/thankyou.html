@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Completed</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <h1>Test Completed</h1>
+    <div class="endmsg">{{ end_message|safe }}</div>
+    {% if redirect_url %}
+    <p><a href="{{ redirect_url }}" class="primary">Continue</a></p>
+    {% endif %}
+    {% if cert_ready %}
+    <p><a href="{{ url_for('download_certificate', submission_id=submission_id) }}" class="primary">Download Certificate (PDF)</a></p>
+    {% endif %}
+  </main>
+</body>
+</html>

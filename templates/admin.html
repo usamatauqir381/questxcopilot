@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <h1>Admin</h1>
+    <section>
+      <h2>Upload Tutorial Questions (CSV/XLSX)</h2>
+      <form method="post" action="{{ url_for('admin_upload', set_type='tutorial') }}" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv,.xlsx" required>
+        <button type="submit" class="primary">Upload</button>
+      </form>
+    </section>
+    <section>
+      <h2>Upload Main Test Questions (CSV/XLSX)</h2>
+      <form method="post" action="{{ url_for('admin_upload', set_type='main') }}" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv,.xlsx" required>
+        <button type="submit" class="primary">Upload</button>
+      </form>
+    </section>
+    <section>
+      <h2>Exports</h2>
+      <p>
+        <a class="primary" href="{{ url_for('export_csv', token=token) }}">Download CSV</a>
+        <a class="primary" href="{{ url_for('export_excel', token=token) }}">Download Excel (.xlsx)</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

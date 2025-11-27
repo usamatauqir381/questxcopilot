@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <img src="/{{ logo_path }}" alt="logo" style="max-height:80px;">
+    <h1>{{ test_name }}</h1>
+    <div class="instructions">{{ instructions|safe }}</div>
+    <form method="post" action="{{ url_for('request_otp') }}">
+      <fieldset>
+        <legend>Start Form</legend>
+        <label>Full Name* <input type="text" name="name" required></label>
+        <label>Student ID <input type="text" name="student_id"></label>
+        <label>Email* <input type="email" name="email" required></label>
+        {% if access_code_required %}
+        <label>Access Code* <input type="text" name="access_code" required></label>
+        {% endif %}
+        <label class="consent"><input type="checkbox" name="consent" required> {{ consent_text }}</label>
+      </fieldset>
+      <button type="submit" class="primary">Send Login Code</button>
+    </form>
+  </main>
+</body>
+</html>

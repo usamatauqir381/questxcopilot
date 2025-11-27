@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Test</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>.hidden{display:none}.timer{font-weight:600;color:#b91c1c}.warn{color:#b45309}</style>
+</head>
+<body>
+  <main class="container">
+    <img src="/{{ logo_path }}" alt="logo" style="max-height:80px;">
+    <h1>{{ test_name }}</h1>
+    <div id="timer" class="timer">Time left: {{ per_question_seconds }}s</div>
+    <p class="warn">Tab switching warnings: <span id="warnCount">0</span> / {{ max_tab_leaves }}</p>
+    <form id="quizForm" method="post" action="{{ url_for('submit_quiz') }}">
+      <input type="hidden" name="violations" id="violations" value="0"/>
+      {% for q in questions %}
+        <section class="question hidden" data-qid="{{ q['id'] }}">
+          <h3>Q{{ loop.index }}. {{ q['text'] }}</h3>
+          {% for opt in q['options'] %}
+            {% if opt %}
+            <label class="option"><input type="radio" name="{{ q['id'] }}" value="{{ opt }}"> {{ opt }}</label>
+            {% endif %}
+          {% endfor %}
+          <div class="controls"><button type="button" id="nextBtn" class="primary">Next</button></div>
+        </section>
+      {% endfor %}
+    </form>
+  </main>
+  <script>
+    const perQuestionSeconds = {{ per_question_seconds }};
+    const sections = Array.from(document.querySelectorAll('section.question'));
+    const form = document.getElementById('quizForm');
+    let idx = 0, timeLeft = perQuestionSeconds, intervalId = null, warns = 0;
+
+    function showSection(i){sections.forEach(s=>s.classList.add('hidden'));const sec=sections[i];sec.classList.remove('hidden');timeLeft=perQuestionSeconds;document.getElementById('timer').textContent='Time left: '+timeLeft+'s';if(intervalId)clearInterval(intervalId);intervalId=setInterval(()=>{timeLeft--;document.getElementById('timer').textContent='Time left: '+timeLeft+'s';if(timeLeft<=0){next();}},1000);const nextBtn=sec.querySelector('#nextBtn');nextBtn.disabled=true;const inputs=sec.querySelectorAll('input');inputs.forEach(inp=>{inp.addEventListener('input',()=>{const ok=Array.from(inputs).some(x=>x.checked);nextBtn.disabled=!ok;});});nextBtn.addEventListener('click',next,{once:true});}
+
+    function next(){if(intervalId)clearInterval(intervalId);idx++; if(idx<sections.length){showSection(idx);} else {document.getElementById('violations').value = String(warns); form.submit();}}
+
+    if(sections.length>0){showSection(0);} window.onpopstate=function(){history.pushState(null,document.title,location.href);};history.pushState(null,document.title,location.href);
+
+    // Anti-cheat detection
+    const maxLeaves = {{ max_tab_leaves }};
+    const action = "{{ violation_action }}"; // 'auto_submit' or 'block'
+    function registerLeave(){warns++; document.getElementById('warnCount').textContent = String(warns);
+      if(warns > maxLeaves){
+        if(action === 'auto_submit'){ document.getElementById('violations').value = String(warns); form.submit(); }
+        else if(action === 'block'){ alert('Test blocked due to policy violation.'); window.location.href = "{{ url_for('blocked') }}"; }
+      } else {
+        alert('Warning: Do not switch tabs or minimize the window.');
+      }
+    }
+    document.addEventListener('visibilitychange', function(){ if(document.hidden){ registerLeave(); } });
+    window.addEventListener('blur', function(){ registerLeave(); });
+  </script>
+</body>
+</html>
