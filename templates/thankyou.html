@@ -5,17 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{{ app_title }} — Completed</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .success-icon {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      animation: bounce 0.6s ease-out;
+    }
+    @keyframes bounce {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    .results-box {
+      background: rgba(76, 175, 80, 0.1);
+      border-left: 3px solid #4caf50;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin: 1.5rem 0;
+    }
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .result-item {
+      background: rgba(31, 136, 255, 0.1);
+      border: 1px solid #1f88ff;
+      border-radius: 6px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .result-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #1f88ff;
+    }
+    .result-label {
+      color: #b3b3b3;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+  </style>
 </head>
 <body>
   <main class="container">
-    <h1>Test Completed</h1>
-    <div class="endmsg">{{ end_message|safe }}</div>
-    {% if redirect_url %}
-    <p><a href="{{ redirect_url }}" class="primary">Continue</a></p>
-    {% endif %}
-    {% if cert_ready %}
-    <p><a href="{{ url_for('download_certificate', submission_id=submission_id) }}" class="primary">Download Certificate (PDF)</a></p>
-    {% endif %}
+    <div class="success-icon">✓</div>
+    <h1>🎉 Quiz Completed!</h1>
+
+    <div class="results-box">
+      <h2 style="margin-top: 0; color: #4caf50;">Submission Received</h2>
+      <p style="color: var(--text-secondary);">Thank you for completing the quiz. Your submission has been recorded. Results and certificates are only available to the administrators.</p>
+    </div>
+
+    <div class="button-group">
+      <a href="{{ url_for('login') }}" class="primary">Return to Home</a>
+    </div>
+
+    <p class="muted" style="text-align: center; margin-top: 2rem; font-size: 0.9rem;">{{ end_message|safe }}</p>
   </main>
 </body>
 </html>

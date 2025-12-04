@@ -5,54 +5,173 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{{ app_title }} — Test</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <style>.hidden{display:none}.timer{font-weight:600;color:#b91c1c}.warn{color:#b45309}</style>
+  <style>
+    .question-image {
+      display: block;
+      width: 680px;
+      height: 380px;
+      object-fit: contain;
+      background: white;
+      padding: 8px;
+      border-radius: 8px;
+      margin: 1rem 0;
+      border: 1px solid rgba(187, 134, 252, 0.3);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      max-width: 100%;
+    }
+    .violation-warning {
+      background: rgba(255, 82, 82, 0.15);
+      border: 2px solid #ff5252;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      color: #ff5252;
+      font-weight: 600;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
 </head>
 <body>
   <main class="container">
-    <img src="/{{ logo_path }}" alt="logo" style="max-height:80px;">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
     <h1>{{ test_name }}</h1>
-    <div id="timer" class="timer">Time left: {{ per_question_seconds }}s</div>
-    <p class="warn">Tab switching warnings: <span id="warnCount">0</span> / {{ max_tab_leaves }}</p>
+    
+    <div id="timer" class="timer">⏱ Time left: <span id="timeDisplay">{{ per_question_seconds }}s</span></div>
+    <p class="warn">⚠️ Tab switching warnings: <span id="warnCount">0</span> / {{ max_tab_leaves }}</p>
+    
     <form id="quizForm" method="post" action="{{ url_for('submit_quiz') }}">
       <input type="hidden" name="violations" id="violations" value="0"/>
+      <input type="hidden" name="violation_reason" id="violation_reason" value=""/>
+      
       {% for q in questions %}
         <section class="question hidden" data-qid="{{ q['id'] }}">
-          <h3>Q{{ loop.index }}. {{ q['text'] }}</h3>
-          {% for opt in q['options'] %}
-            {% if opt %}
-            <label class="option"><input type="radio" name="{{ q['id'] }}" value="{{ opt }}"> {{ opt }}</label>
-            {% endif %}
-          {% endfor %}
-          <div class="controls"><button type="button" id="nextBtn" class="primary">Next</button></div>
+          <h3>Question {{ loop.index }} of {{ questions|length }}</h3>
+          <p style="margin-bottom: 1.5rem; color: #ffffff; font-size: 1rem;">{{ q['text'] }}</p>
+          
+          {% if q['image_url'] %}
+          <img src="{{ url_for('static', filename=q['image_url']) }}" alt="Question Image" class="question-image">
+          {% endif %}
+          
+          <div style="margin-bottom: 1.5rem;">
+            {% for opt in q['options'] %}
+              {% if opt %}
+                <label class="option">
+                  <input type="radio" name="{{ q['id'] }}" value="{{ opt }}" required>
+                  <span>{{ opt }}</span>
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+          
+          <div class="controls">
+            <button type="button" id="nextBtn" class="primary" disabled>
+              {% if loop.last %}
+                Submit Test
+              {% else %}
+                Next Question →
+              {% endif %}
+            </button>
+          </div>
         </section>
       {% endfor %}
     </form>
   </main>
+
   <script>
     const perQuestionSeconds = {{ per_question_seconds }};
     const sections = Array.from(document.querySelectorAll('section.question'));
     const form = document.getElementById('quizForm');
     let idx = 0, timeLeft = perQuestionSeconds, intervalId = null, warns = 0;
-
-    function showSection(i){sections.forEach(s=>s.classList.add('hidden'));const sec=sections[i];sec.classList.remove('hidden');timeLeft=perQuestionSeconds;document.getElementById('timer').textContent='Time left: '+timeLeft+'s';if(intervalId)clearInterval(intervalId);intervalId=setInterval(()=>{timeLeft--;document.getElementById('timer').textContent='Time left: '+timeLeft+'s';if(timeLeft<=0){next();}},1000);const nextBtn=sec.querySelector('#nextBtn');nextBtn.disabled=true;const inputs=sec.querySelectorAll('input');inputs.forEach(inp=>{inp.addEventListener('input',()=>{const ok=Array.from(inputs).some(x=>x.checked);nextBtn.disabled=!ok;});});nextBtn.addEventListener('click',next,{once:true});}
-
-    function next(){if(intervalId)clearInterval(intervalId);idx++; if(idx<sections.length){showSection(idx);} else {document.getElementById('violations').value = String(warns); form.submit();}}
-
-    if(sections.length>0){showSection(0);} window.onpopstate=function(){history.pushState(null,document.title,location.href);};history.pushState(null,document.title,location.href);
-
-    // Anti-cheat detection
+    const totalQuestions = sections.length;
     const maxLeaves = {{ max_tab_leaves }};
-    const action = "{{ violation_action }}"; // 'auto_submit' or 'block'
-    function registerLeave(){warns++; document.getElementById('warnCount').textContent = String(warns);
-      if(warns > maxLeaves){
-        if(action === 'auto_submit'){ document.getElementById('violations').value = String(warns); form.submit(); }
-        else if(action === 'block'){ alert('Test blocked due to policy violation.'); window.location.href = "{{ url_for('blocked') }}"; }
+
+    function showSection(i) {
+      sections.forEach(s => s.classList.add('hidden'));
+      const sec = sections[i];
+      sec.classList.remove('hidden');
+      timeLeft = perQuestionSeconds;
+      updateTimerDisplay();
+      
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 5) {
+          document.getElementById('timer').classList.add('critical');
+        } else {
+          document.getElementById('timer').classList.remove('critical');
+        }
+        if (timeLeft <= 0) {
+          next();
+        }
+      }, 1000);
+      
+      const nextBtn = sec.querySelector('#nextBtn');
+      nextBtn.disabled = true;
+      const inputs = sec.querySelectorAll('input');
+      inputs.forEach(inp => {
+        inp.addEventListener('change', () => {
+          const ok = Array.from(inputs).some(x => x.checked);
+          nextBtn.disabled = !ok;
+        });
+      });
+      nextBtn.addEventListener('click', next, { once: true });
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('timeDisplay').textContent = timeLeft + 's';
+    }
+
+    function next() {
+      if (intervalId) clearInterval(intervalId);
+      idx++;
+      if (idx < sections.length) {
+        showSection(idx);
       } else {
-        alert('Warning: Do not switch tabs or minimize the window.');
+        document.getElementById('violations').value = String(warns);
+        form.submit();
       }
     }
-    document.addEventListener('visibilitychange', function(){ if(document.hidden){ registerLeave(); } });
-    window.addEventListener('blur', function(){ registerLeave(); });
+
+    if (sections.length > 0) {
+      showSection(0);
+    }
+    
+    window.onpopstate = function() {
+      history.pushState(null, document.title, location.href);
+    };
+    history.pushState(null, document.title, location.href);
+
+    // Anti-cheat detection
+    const action = "{{ violation_action }}";
+    function registerLeave() {
+      warns++;
+      document.getElementById('warnCount').textContent = String(warns);
+      
+      if (warns > maxLeaves) {
+        // Auto-submit quiz due to violations
+        document.getElementById('violations').value = String(warns);
+        document.getElementById('violation_reason').value = 'Auto-submitted due to tab switching violations (exceeded limit of ' + maxLeaves + ')';
+        alert('❌ Quiz has been auto-submitted due to excessive tab switching violations!');
+        form.submit();
+      } else {
+        alert('⚠️ Warning ' + warns + '/' + maxLeaves + ': Do not switch tabs. One more violation will end the quiz!');
+      }
+    }
+    
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        registerLeave();
+      }
+    });
+    
+    window.addEventListener('blur', function() {
+      registerLeave();
+    });
   </script>
 </body>
 </html>

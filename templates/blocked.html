@@ -5,11 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{{ app_title }} — Blocked</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .error-icon {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #ff5252;
+    }
+    .error-box {
+      background: rgba(255, 82, 82, 0.1);
+      border-left: 3px solid #ff5252;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin: 1.5rem 0;
+      line-height: 1.8;
+    }
+  </style>
 </head>
 <body>
   <main class="container">
+    <div class="error-icon">⚠️</div>
     <h1>Test Blocked</h1>
-    <p>You have exceeded the allowed tab switches or window changes. Please contact your instructor.</p>
+    <div class="error-box">
+      <p>Your test has been blocked due to policy violations (tab switching or window changes detected).</p>
+      <p style="margin-top: 1rem; margin-bottom: 0;">Please contact your instructor or administrator for more information.</p>
+    </div>
   </main>
 </body>
 </html>

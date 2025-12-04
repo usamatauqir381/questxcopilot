@@ -8,12 +8,23 @@
 </head>
 <body>
   <main class="container">
-    <h1>Enter the code sent to your email</h1>
-    <form method="post" action="{{ url_for('verify_otp') }}">
-      <label>6-digit code <input type="text" name="otp" pattern="\d{6}" maxlength="6" required></label>
+    <h1>Verify Your Email</h1>
+    <p class="muted" style="text-align: center; margin-bottom: 2rem;">Enter the 6-digit code sent to your email address</p>
+    
+    <form method="post" action="{{ url_for('verify_otp') }}" class="login-form">
+      <fieldset>
+        <legend>Verification Code</legend>
+        <label>
+          Enter Code*
+          <input type="text" name="otp" placeholder="000000" pattern="\d{6}" maxlength="6" inputmode="numeric" required>
+        </label>
+      </fieldset>
       <button type="submit" class="primary">Verify & Continue</button>
     </form>
-    <p class="muted">If you didn't receive a code, please check spam or try again later.</p>
+    
+    <p class="muted" style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem;">
+      💡 Check your spam folder if you didn't receive the code
+    </p>
   </main>
 </body>
 </html>

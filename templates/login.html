@@ -5,25 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{{ app_title }} — Login</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .status-box {
+      background: rgba(255, 82, 82, 0.1);
+      border-left: 3px solid #ff5252;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      color: #ff5252;
+      font-weight: 600;
+    }
+    .status-box.active {
+      background: rgba(76, 175, 80, 0.1);
+      border-left-color: #00e676;
+      color: #00e676;
+    }
+    .error-msg {
+      background: rgba(255, 82, 82, 0.1);
+      border-left: 3px solid #ff5252;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      color: #ff5252;
+    }
+    .admin-link {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(187, 134, 252, 0.2);
+    }
+    .admin-link a {
+      color: #00d9ff;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .admin-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
   <main class="container">
-    <img src="/{{ logo_path }}" alt="logo" style="max-height:80px;">
+    {% if test_status.status != 'active' %}
+    <div class="status-box">
+      ❌ Quiz Status: <strong>{{ test_status.status|upper }}</strong>
+      <br>{{ test_status.message }}
+    </div>
+    {% else %}
+    <div class="status-box active">
+      ✓ Quiz is Active - Login to Begin
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="error-msg">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
     <h1>{{ test_name }}</h1>
-    <div class="instructions">{{ instructions|safe }}</div>
-    <form method="post" action="{{ url_for('request_otp') }}">
+    
+    <form method="post" class="login-form" {% if test_status.status != 'active' %}disabled{% endif %}>
       <fieldset>
-        <legend>Start Form</legend>
-        <label>Full Name* <input type="text" name="name" required></label>
-        <label>Student ID <input type="text" name="student_id"></label>
-        <label>Email* <input type="email" name="email" required></label>
-        {% if access_code_required %}
-        <label>Access Code* <input type="text" name="access_code" required></label>
-        {% endif %}
-        <label class="consent"><input type="checkbox" name="consent" required> {{ consent_text }}</label>
+        <legend>Student Login</legend>
+        
+        <label>
+          Full name (as you want it on the certificate)*
+          <input type="text" name="name" placeholder="e.g. Ali Ahmed" required
+                 title="This name will be printed on your certificate"
+                 {% if test_status.status != 'active' %}disabled{% endif %}>
+          <small style="color:var(--text-muted);">This exact name will be printed on your certificate — please enter it carefully.</small>
+        </label>
+
+        <label>
+          Email*
+          <input type="email" name="email" placeholder="your.email@example.com" required 
+                 {% if test_status.status != 'active' %}disabled{% endif %}>
+        </label>
+        
+        <label>
+          Password*
+          <input type="password" name="password" placeholder="Enter your password" required
+                 {% if test_status.status != 'active' %}disabled{% endif %}>
+        </label>
       </fieldset>
-      <button type="submit" class="primary">Send Login Code</button>
+      
+      <button type="submit" class="primary" {% if test_status.status != 'active' %}disabled{% endif %}>
+        Start Quiz
+      </button>
     </form>
+
+    <div class="admin-link">
+      <a href="{{ url_for('admin_login') }}">🔐 Admin Panel</a>
+    </div>
   </main>
 </body>
 </html>

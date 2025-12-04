@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Instructions</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .level-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #0B3D91 0%, #2B6CB0 100%);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+    .level-badge .subtitle {
+      font-size: 0.85rem;
+      font-weight: normal;
+      opacity: 0.9;
+      display: block;
+    }
+    .instructions-box {
+      background: rgba(31, 136, 255, 0.1);
+      border-left: 4px solid #1f88ff;
+      padding: 2rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+    .instructions-box h2 {
+      color: #00d9ff;
+      margin-top: 0;
+    }
+    .instructions-box ul {
+      margin-left: 1.5rem;
+      line-height: 1.8;
+    }
+    .instructions-box li {
+      margin-bottom: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+    <h1>{{ test_name }}</h1>
+    
+    <div class="level-badge">
+      Your Level: {{ level }}
+    </div>
+    
+    <div class="instructions-box">
+      {{ instructions|safe }}
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+      <form method="post" action="{{ url_for('start_tutorial') }}">
+        <button type="submit" class="primary">📚 Start Tutorial Quiz</button>
+      </form>
+      <form method="post" action="{{ url_for('login') }}">
+        <button type="submit" class="primary" style="background: linear-gradient(135deg, #888888 0%, #666666 100%);">⬅️ Go Back</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

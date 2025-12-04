@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Submission Details</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .student-info {
+      background: rgba(31, 136, 255, 0.1);
+      border-left: 4px solid #1f88ff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .result-box {
+      background: rgba(187, 134, 252, 0.1);
+      border: 1px solid #bb86fc;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .result-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #bb86fc;
+    }
+    .result-label {
+      color: #b3b3b3;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .questions-section {
+      margin-top: 2rem;
+    }
+    .question-card {
+      background: rgba(26, 31, 40, 0.5);
+      border: 1px solid rgba(187, 134, 252, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .question-title {
+      color: #00d9ff;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .question-text {
+      color: #ffffff;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .answer-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: rgba(31, 136, 255, 0.05);
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      align-items: center;
+    }
+    .answer-label {
+      color: #b3b3b3;
+      font-weight: 600;
+    }
+    .answer-value {
+      color: #ffffff;
+    }
+    .correct {
+      border-left: 4px solid #00e676;
+      background: rgba(76, 175, 80, 0.08);
+    }
+    .incorrect {
+      border-left: 4px solid #ff5252;
+      background: rgba(255, 82, 82, 0.08);
+    }
+  </style>
+</head>
+<body>
+  <main class="container" style="max-width: 900px;">
+    <div style="margin-bottom: 2rem;">
+      <a href="{{ url_for('admin_dashboard') }}" class="primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">⬅️ Back</a>
+    </div>
+
+    <h1>📋 Submission #{{ submission.id }}</h1>
+
+    <!-- Student Info -->
+    <div class="student-info">
+      <h2 style="margin-top: 0; color: #1f88ff;">Student Information</h2>
+      <p><strong>Name:</strong> {{ submission.name }}</p>
+      <p><strong>Email:</strong> {{ submission.email }}</p>
+      <p><strong>Student ID:</strong> {{ submission.student_id or '—' }}</p>
+    </div>
+
+    <!-- Results -->
+    <h2 style="color: #bb86fc;">Results Summary</h2>
+    <div class="results-grid">
+      <div class="result-box">
+        <div class="result-value">{{ score }}</div>
+        <div class="result-label">Score (out of {{ total }})</div>
+      </div>
+      <div class="result-box">
+        <div class="result-value">{{ percent }}%</div>
+        <div class="result-label">Percentage</div>
+      </div>
+      <div class="result-box">
+        <div class="result-value">{{ grade }}</div>
+        <div class="result-label">Grade</div>
+      </div>
+      <div class="result-box">
+        <div class="result-value">{{ description }}</div>
+        <div class="result-label">Rating</div>
+      </div>
+    </div>
+
+    {% if submission.violations_count > 0 %}
+    <div style="background: rgba(255, 82, 82, 0.1); border-left: 4px solid #ff5252; padding: 1rem; border-radius: 6px; margin: 1.5rem 0;">
+      <strong style="color: #ff5252;">⚠️ Violations Detected:</strong>
+      <p style="margin: 0.5rem 0 0 0; color: #ff5252;">{{ submission.violations_count }} tab switch(es)</p>
+      {% if submission.violation_reason %}
+      <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: #ffb74d;">Reason: {{ submission.violation_reason }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Questions & Answers -->
+    <div class="questions-section">
+      <h2 style="color: #bb86fc;">Question-by-Question Breakdown</h2>
+      
+      {% for detail in details %}
+      <div class="question-card">
+        <div class="question-title">Question {{ loop.index }}: {{ detail.text[:60] }}...</div>
+        <div class="question-text">{{ detail.text }}</div>
+        
+        <div class="answer-row {% if detail.correct %}correct{% else %}incorrect{% endif %}">
+          <div class="answer-label">Your Answer:</div>
+          <div class="answer-value">{{ detail.given_text or '(No answer)' }}</div>
+        </div>
+        
+        <div class="answer-row">
+          <div class="answer-label">Correct Answer:</div>
+          <div class="answer-value">{{ detail.correct_key|upper }}</div>
+        </div>
+        
+        {% if detail.correct %}
+        <div style="margin-top: 0.75rem; padding: 0.75rem; border-radius: 4px; background: rgba(76, 175, 80, 0.15); color: #00e676; font-weight: 600;">
+          ✓ CORRECT
+        </div>
+        {% else %}
+        <div style="margin-top: 0.75rem; padding: 0.75rem; border-radius: 4px; background: rgba(255, 82, 82, 0.15); color: #ff5252; font-weight: 600;">
+          ✗ INCORRECT
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="{{ url_for('admin_dashboard') }}" class="primary" style="padding: 0.75rem 1.5rem;">⬅️ Back to Dashboard</a>
+    </div>
+  </main>
+</body>
+</html>

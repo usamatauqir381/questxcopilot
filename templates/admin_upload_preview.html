@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Preview & Approve Questions</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .preview-header {
+      background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(187, 134, 252, 0.1) 100%);
+      border-left: 4px solid #00d9ff;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
+    .preview-header h2 {
+      margin-top: 0;
+      color: #00d9ff;
+    }
+    .preview-header .info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+    }
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #aaa;
+    }
+    .info-value {
+      color: #00d9ff;
+      font-weight: bold;
+    }
+    .question-card {
+      background: rgba(31, 43, 56, 0.8);
+      border: 1px solid #444;
+      padding: 1rem;
+      margin: 0.8rem 0;
+      border-radius: 6px;
+    }
+    .question-card h4 {
+      color: #00d9ff;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    .question-card .qtext {
+      margin: 0.5rem 0;
+      color: #ccc;
+      font-weight: 500;
+    }
+    .question-card .options {
+      margin: 0.8rem 0;
+      display: grid;
+      gap: 0.4rem;
+    }
+    .question-card .question-image { margin-top: 0.6rem }
+    .question-card .question-image img { width:320px; height:220px; object-fit:contain; background:white; padding:6px; border-radius:6px; border:1px solid rgba(0,0,0,0.06) }
+    .option-item {
+      padding: 0.4rem 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .option-item .key {
+      font-weight: bold;
+      color: #bb86fc;
+    }
+    .option-item.correct {
+      background: rgba(0, 230, 118, 0.1);
+      border-left: 3px solid #00e676;
+      padding-left: 0.5rem;
+      color: #00e676;
+    }
+    .action-section {
+      background: rgba(31, 136, 255, 0.05);
+      border: 2px dashed #1f88ff;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .action-section h3 {
+      color: #1f88ff;
+      margin-top: 0;
+    }
+    .btn-approve {
+      background: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      margin: 0.5rem;
+    }
+    .btn-approve:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 230, 118, 0.3);
+    }
+    .btn-cancel {
+      background: #666;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      margin: 0.5rem;
+    }
+    .btn-cancel:hover {
+      background: #888;
+    }
+  </style>
+</head>
+<body>
+  <main class="admin-container">
+    <h1>Preview & Approve Questions</h1>
+
+    <!-- Preview Header with Info -->
+    <div class="preview-header">
+      <h2>✅ File Successfully Parsed</h2>
+      <div class="info">
+        <div class="info-item">
+          <span class="info-label">Question Type:</span>
+          <span class="info-value">{{ set_type|upper }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Level:</span>
+          <span class="info-value">{{ level if set_type == 'main' else 'SHARED (All Levels)' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Total Questions:</span>
+          <span class="info-value">{{ questions|length }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">File Name:</span>
+          <span class="info-value" style="font-size: 0.85rem;">{{ filename }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Preview -->
+    <div style="margin: 2rem 0;">
+      <h2 style="color: #bb86fc; border-bottom: 2px solid #bb86fc; padding-bottom: 0.5rem;">Questions Preview</h2>
+      {% if questions|length > 0 %}
+        {% for q in questions %}
+          <div class="question-card">
+            <h4>Q{{ loop.index }}: {{ q.question_id }}</h4>
+            <div class="qtext">{{ q.text[:150] }}{% if q.text|length > 150 %}...{% endif %}</div>
+            {% if q.image_url %}
+            <div class="question-image">
+              {% if q.image_url.startswith('http') %}
+                <img src="{{ q.image_url }}" alt="Preview Image">
+              {% else %}
+                <img src="{{ url_for('static', filename=q.image_url) }}" alt="Preview Image">
+              {% endif %}
+            </div>
+            {% endif %}
+            <div class="options">
+              {% set options = [('A', q.option_a), ('B', q.option_b), ('C', q.option_c), ('D', q.option_d)] %}
+              {% for opt_key, opt_text in options %}
+                <div class="option-item {% if opt_key|lower == q.correct %}correct{% endif %}">
+                  <span class="key">{{ opt_key }}:</span> {{ opt_text }}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div style="background: rgba(255, 82, 82, 0.1); padding: 1.5rem; border-radius: 6px; color: #ff5252; text-align: center;">
+          ❌ No questions found in the uploaded file!
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Action Section -->
+    <div class="action-section">
+      <h3>Ready to Add These Questions?</h3>
+      <p style="color: #aaa; margin-bottom: 1.5rem;">
+        Click "✅ Add All Questions for {{ level if set_type == 'main' else 'All Levels (Tutorial)' }}" to confirm and add them to the system.
+      </p>
+      
+      {% if questions|length > 0 %}
+        <form method="post" action="{{ url_for('admin_approve_questions') }}" style="display: inline;">
+          <input type="hidden" name="set_type" value="{{ set_type }}">
+          <input type="hidden" name="level" value="{{ level }}">
+          <input type="hidden" name="temp_file" value="{{ temp_file }}">
+          <input type="hidden" name="questions_json" value="{{ questions_json }}">
+          
+          <button type="submit" class="btn-approve">
+            ✅ Add All Questions for {{ level if set_type == 'main' else 'All Levels' }}
+          </button>
+        </form>
+      {% endif %}
+
+      <form method="get" action="{{ url_for('admin_upload_questions') }}" style="display: inline;">
+        <button type="submit" class="btn-cancel">← Upload Different File</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

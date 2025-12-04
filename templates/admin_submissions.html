@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submissions - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { background: linear-gradient(135deg, #0f1419 0%, #0a0e13 100%); min-height: 100vh; padding: 2rem; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        h1 { color: #00d9ff; margin: 0; }
+        .back-btn { background: #1f88ff; color: white; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; }
+        .submissions-table { width: 100%; border-collapse: collapse; background: rgba(26,31,40,0.8); border: 1px solid rgba(187,134,252,0.2); border-radius: 12px; }
+        .submissions-table thead { background: rgba(31,136,255,0.15); }
+        .submissions-table th { padding: 1rem; text-align: left; color: #00d9ff; font-weight: 600; border-bottom: 2px solid rgba(187,134,252,0.2); }
+        .submissions-table td { padding: 0.8rem 1rem; border-bottom: 1px solid rgba(187,134,252,0.1); color: #b3b3b3; }
+        .submissions-table tr:hover { background: rgba(187,134,252,0.05); }
+        .badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .badge-level { background: rgba(31,136,255,0.2); color: #1f88ff; }
+        .badge-pass { background: rgba(0,230,118,0.2); color: #00e676; }
+        .badge-fail { background: rgba(255,82,82,0.2); color: #ff5252; }
+        .score { font-weight: 600; color: #00d9ff; }
+        .action-btn { background: linear-gradient(135deg,#1f88ff 0%,#bb86fc 100%); color: white; padding: 0.4rem 0.8rem; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 0.85rem; }
+        .action-btn:hover { transform: translateY(-2px); }
+        .no-data { text-align: center; color: #888; padding: 2rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Quiz Submissions</h1>
+            <a href="{{ url_for('admin_dashboard') }}" class="back-btn">← Back to Dashboard</a>
+        </div>
+
+        {% if submissions %}
+        <table class="submissions-table">
+            <thead>
+                <tr>
+                    <th>Student Email</th>
+                    <th>Name</th>
+                    <th>Level</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                    <th>Status</th>
+                    <th>Completed</th>
+                    <th>Violations</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in submissions %}
+                <tr>
+                    <td>{{ sub.email }}</td>
+                    <td>{{ sub.name or '—' }}</td>
+                    <td><span class="badge badge-level">{{ sub.level or 'N/A' }}</span></td>
+                    <td class="score">{{ sub.score }}/{{ sub.total }}</td>
+                    <td class="score">{{ sub.percentage }}%</td>
+                    <td>
+                        {% if sub.percentage >= 60 %}
+                            <span class="badge badge-pass">PASS</span>
+                        {% else %}
+                            <span class="badge badge-fail">FAIL</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ sub.finished_at[:10] }}</td>
+                    <td>{{ sub.violations }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_submission_detail', submission_id=sub.id) }}" class="action-btn">View Details</a>
+                        <a href="{{ url_for('admin_download_certificate', submission_id=sub.id) }}" class="action-btn" style="background: linear-gradient(135deg,#00c853 0%,#1de9b6 100%); margin-left: 4px;">Download Certificate</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="no-data">
+            <p>No submissions yet. Students haven't completed the quiz.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

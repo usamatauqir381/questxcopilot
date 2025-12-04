@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Import Credentials</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="admin-container">
+    <h1>Import Student Credentials with Levels</h1>
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('admin_import_post') }}" enctype="multipart/form-data">
+      <fieldset>
+        <label for="emails">Paste credentials (one per line)</label>
+        <p style="font-size:0.9rem; color:#666; margin:0.5rem 0;">
+          <strong>Format:</strong> email,level <br/>
+          <strong>Example:</strong> john@school.com,NOVAS <br/>
+          <strong>Levels:</strong> NOVAS | VOYAGERS | TITANS | LEGENDS
+        </p>
+        <textarea id="emails" name="emails" rows="10" style="width:100%; font-family:monospace;"></textarea>
+
+        <p style="text-align:center; margin: 1rem 0;">OR</p>
+
+        <label for="file">Upload CSV or TXT file</label>
+        <p style="font-size:0.9rem; color:#666; margin:0.5rem 0;">
+          Columns: email, level (optional level column defaults to NOVAS)
+        </p>
+        <input type="file" name="file" id="file" accept=".csv,text/plain" />
+
+        <p style="margin-top:1rem; background:#f0f0f0; padding:1rem; border-left:4px solid #0B3D91;">
+          <strong>Password:</strong> All accounts will be set to <strong>123456</strong> <br/>
+          <strong>Levels:</strong> NOVAS (Year 3-4), VOYAGERS (Year 5-6), TITANS (Year 7-8), LEGENDS (Year 9-10)
+        </p>
+
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+          <button type="submit" class="primary">Import</button>
+          <a href="{{ url_for('admin_credentials') }}" class="secondary">Back</a>
+        </div>
+      </fieldset>
+    </form>
+  </main>
+</body>
+</html>

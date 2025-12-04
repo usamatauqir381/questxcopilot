@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(187, 134, 252, 0.2);
+    }
+    .admin-section {
+      background: rgba(26, 31, 40, 0.5);
+      border: 1px solid rgba(187, 134, 252, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .section-title {
+      font-size: 1.2rem;
+      color: #00d9ff;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .alert-success {
+      background: rgba(0, 230, 118, 0.1);
+      border-left: 4px solid #00e676;
+      color: #00e676;
+    }
+    .alert-error {
+      background: rgba(255, 82, 82, 0.1);
+      border-left: 4px solid #ff5252;
+      color: #ff5252;
+    }
+    .alert-warning {
+      background: rgba(255, 183, 77, 0.1);
+      border-left: 4px solid #ffb74d;
+      color: #ffb74d;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-box {
+      background: rgba(31, 136, 255, 0.1);
+      border: 1px solid #1f88ff;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-box .value {
+      font-size: 2rem;
+      color: #1f88ff;
+      font-weight: bold;
+    }
+    .stat-box .label {
+      color: #b3b3b3;
+      font-size: 0.9rem;
+    }
+    .quiz-status {
+      background: rgba(76, 175, 80, 0.1);
+      border-left: 3px solid #00e676;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
+    .quiz-status.ended {
+      background: rgba(255, 82, 82, 0.1);
+      border-left-color: #ff5252;
+    }
+    .quiz-status.inactive {
+      background: rgba(255, 183, 77, 0.1);
+      border-left-color: #ffb74d;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .submissions-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .submissions-table thead {
+      background: rgba(31, 136, 255, 0.1);
+      border-bottom: 2px solid #1f88ff;
+    }
+    .submissions-table th {
+      padding: 0.75rem;
+      text-align: left;
+      color: #00d9ff;
+      font-weight: 600;
+    }
+    .submissions-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(187, 134, 252, 0.1);
+      color: #b3b3b3;
+    }
+    .submissions-table tr:hover {
+      background: rgba(187, 134, 252, 0.05);
+    }
+    .view-link {
+      color: #00d9ff;
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .view-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="container" style="max-width: 1000px;">
+    <div class="admin-header dashboard-hero">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <img src="/static/logo.png" alt="Logo" class="logo" style="max-width:60px; max-height:60px;"/>
+        </div>
+        <div>
+          <div class="hero-title">{{ CFG['test']['name'] }} — Admin Console</div>
+          
+        </div>
+      </div>
+
+      <div class="dashboard-actions" style="display: flex; gap: 0.8rem; align-items: center;">
+        <a href="{{ url_for('admin_upload_questions') }}" class="primary" style="padding: 0.6rem 1rem; border-radius:10px; background: linear-gradient(135deg, #1f88ff 0%, #00d9ff 100%); text-decoration: none; font-weight: 600;">⬆️ Upload</a>
+        <a href="{{ url_for('admin_questions') }}" class="primary" style="padding: 0.6rem 1rem; border-radius:10px; background: linear-gradient(135deg, #7b61ff 0%, #bb86fc 100%); text-decoration: none; font-weight: 600;">👁️ View</a>
+        <a href="{{ url_for('admin_credentials') }}" class="primary" style="padding: 0.6rem 1rem; border-radius:10px; background: linear-gradient(135deg, #00c853 0%, #00e676 100%); text-decoration: none; font-weight: 600;">👥 Manage</a>
+        <a href="{{ url_for('admin_logout') }}" class="primary" style="padding: 0.6rem 1rem; border-radius:10px;">Logout</a>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% if session.pop('success_msg', None) %}
+      <div class="alert alert-success">{{ session['success_msg'] }}</div>
+    {% endif %}
+    {% if session.pop('error_msg', None) %}
+      <div class="alert alert-error">{{ session['error_msg'] }}</div>
+    {% endif %}
+    {% if session.pop('warning_msg', None) %}
+      <div class="alert alert-warning">{{ session['warning_msg'] }}</div>
+    {% endif %}
+
+    <!-- Quiz Status -->
+    {% if test %}
+    <div class="admin-section panel" style="margin-top:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem;">
+        <div>
+          <div style="font-weight:700; font-size:1.05rem;">Quiz Status</div>
+          <div class="small-muted">
+            {% if test.start_time %}<span>Started: {{ test.start_time }}</span>{% endif %}
+            {% if test.end_time %} &nbsp;•&nbsp; <span>Ended: {{ test.end_time }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="control-row">
+          <div style="text-align:right; margin-right:1rem;">
+            <strong style="display:block; font-size:1.1rem;">{% if test.status == 'active' %}<span style="color:var(--accent-green)">✓ ACTIVE</span>{% elif test.status == 'ended' %}<span style="color:var(--error)">✗ ENDED</span>{% else %}<span style="color:var(--warning)">⏸ INACTIVE</span>{% endif %}</strong>
+            <div class="small-muted">Status of the exam across all levels</div>
+          </div>
+
+          <form id="quizControlForm" method="post" action="{{ url_for('admin_quiz_control') }}" class="form-group" onsubmit="return confirmAction();">
+            {% if test.status == 'active' %}
+              <input type="hidden" name="action" value="end">
+              <button type="submit" class="primary" style="background: linear-gradient(135deg, #ff5252 0%, #ff6a6a 100%); padding:0.6rem 0.9rem; border-radius:10px;">🛑 End Quiz</button>
+            {% else %}
+              <input type="hidden" name="action" value="start">
+              <button type="submit" class="primary" style="background: linear-gradient(135deg, #7b61ff 0%, #bb86fc 100%); padding:0.6rem 0.9rem; border-radius:10px;">▶ Start Quiz</button>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+      <div class="neon-divider"></div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="value">{{ submissions|length }}</div>
+          <div class="label">Total Submissions</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">{{ active_credentials }}</div>
+          <div class="label">Active Credentials</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">{{ used_credentials }}</div>
+          <div class="label">Used Credentials</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">{{ test.status|upper }}</div>
+          <div class="label">Quiz Status</div>
+        </div>
+      </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <script>
+      function confirmAction(){
+        const form = document.getElementById('quizControlForm');
+        const action = form.querySelector('input[name="action"]').value;
+        if(action === 'start'){
+          return confirm('Start the quiz now? This will allow students to log in and begin.');
+        } else if(action === 'end'){
+          return confirm('End the quiz now? This will prevent further logins and close the test.');
+        }
+        return true;
+      }
+    </script>
+
+    <!-- Student Credentials -->
+    <div class="admin-section">
+      <h2 class="section-title">👥 Student Credentials</h2>
+      <div class="button-group">
+        <form method="post" action="{{ url_for('admin_generate_credentials') }}" class="form-group">
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <label style="margin: 0;">
+              Generate:
+              <input type="number" name="count" min="1" max="100" value="10" style="width: 60px;">
+            </label>
+            <button type="submit" class="primary" style="margin: 0;">Generate Credentials</button>
+          </div>
+        </form>
+        <a href="{{ url_for('admin_credentials') }}" class="primary">View All Credentials</a>
+      </div>
+    </div>
+
+    <!-- Add Single User and Questions -->
+    <div class="admin-section">
+      <h2 class="section-title">➕ Add Single User</h2>
+      <div style="margin-bottom: 1.5rem;">
+        <a href="{{ url_for('admin_import_sample_questions') }}" class="primary" style="background: linear-gradient(135deg, #00c853 0%, #1de9b6 100%); padding: 0.8rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">📦 Import 25 Sample Questions (All Levels)</a>
+      </div>
+      <form method="post" action="{{ url_for('admin_add_user') }}" style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; align-items:end;">
+        <div>
+          <label>Email</label>
+          <input type="email" name="email" required style="width:100%; padding:0.5rem;" />
+        </div>
+        <div>
+          <label>Password</label>
+          <input type="text" name="password" required style="width:100%; padding:0.5rem;" />
+        </div>
+        <div>
+          <label>Name (optional)</label>
+          <input type="text" name="name" style="width:100%; padding:0.5rem;" />
+        </div>
+        <div>
+          <label>Level</label>
+          <select name="level" required style="width:100%; padding:0.5rem;">
+            <option value="NOVAS">NOVAS (Year 3-4)</option>
+            <option value="VOYAGERS">VOYAGERS (Year 5-6)</option>
+            <option value="TITANS">TITANS (Year 7-8)</option>
+            <option value="LEGENDS">LEGENDS (Year 9-10)</option>
+          </select>
+        </div>
+        <div style="grid-column: 1 / -1; text-align:right;">
+          <button type="submit" class="primary">Add / Update User</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-section">
+      <h2 class="section-title">✏️ Add Single Question</h2>
+      <form method="post" action="{{ url_for('admin_add_question') }}" enctype="multipart/form-data" style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+        <div>
+          <label>Set Type</label>
+          <select id="set_type" name="set_type" required style="width:100%; padding:0.5rem;" onchange="toggleLevelSelect();">
+            <option value="main">Main (Per-Level)</option>
+            <option value="tutorial">Tutorial (Shared)</option>
+          </select>
+        </div>
+        <div id="level_div">
+          <label>Level</label>
+          <select name="level" required style="width:100%; padding:0.5rem;">
+            <option value="NOVAS">NOVAS (Year 3-4)</option>
+            <option value="VOYAGERS">VOYAGERS (Year 5-6)</option>
+            <option value="TITANS">TITANS (Year 7-8)</option>
+            <option value="LEGENDS">LEGENDS (Year 9-10)</option>
+          </select>
+        </div>
+        <div style="grid-column: 1 / -1;">
+          <label>Question ID (optional)</label>
+          <input type="text" name="question_id" placeholder="e.g. Q1" style="width:100%; padding:0.5rem;" />
+        </div>
+        <div style="grid-column: 1 / -1;">
+          <label>Question Text</label>
+          <textarea name="question_text" rows="3" required style="width:100%; padding:0.5rem;"></textarea>
+        </div>
+        <div>
+          <label>Option A</label>
+          <input type="text" name="option_a" style="width:100%; padding:0.5rem;" />
+        </div>
+        <div>
+          <label>Option B</label>
+          <input type="text" name="option_b" style="width:100%; padding:0.5rem;" />
+        </div>
+        <div>
+          <label>Option C</label>
+          <input type="text" name="option_c" style="width:100%; padding:0.5rem;" />
+        </div>
+        <div>
+          <label>Option D</label>
+          <input type="text" name="option_d" style="width:100%; padding:0.5rem;" />
+        </div>
+        <div>
+          <label>Correct Option</label>
+          <select name="correct_option" required style="width:100%; padding:0.5rem;">
+            <option value="a">A</option>
+            <option value="b">B</option>
+            <option value="c">C</option>
+            <option value="d">D</option>
+          </select>
+        </div>
+        <div>
+          <label>Image (optional - any image type)</label>
+          <input type="file" name="image" accept="*" />
+        </div>
+        <div style="grid-column: 1 / -1; text-align:right; display:flex; gap:8px; justify-content:flex-end; align-items:center;">
+          <a href="{{ url_for('static', filename='samples/questions_template.csv') }}" class="primary" download style="text-decoration: none; padding: 0.5rem 1rem; border-radius: 4px; display: inline-block;">⬇️ Download CSV Template</a>
+          <button type="submit" class="primary">Add Question</button>
+          <a href="{{ url_for('admin_questions') }}" class="primary" style="text-decoration: none; padding: 0.5rem 1rem; border-radius: 4px; display: inline-block;">👁️ View All Questions</a>
+        </div>
+      </form>
+      <script>
+        function toggleLevelSelect() {
+          const setType = document.getElementById('set_type').value;
+          const levelDiv = document.getElementById('level_div');
+          if (setType === 'tutorial') {
+            levelDiv.style.display = 'none';
+            levelDiv.querySelector('select').required = false;
+          } else {
+            levelDiv.style.display = 'block';
+            levelDiv.querySelector('select').required = true;
+          }
+        }
+        toggleLevelSelect(); // Call on page load
+      </script>
+    </div>
+
+    <!-- Upload Questions -->
+    <div class="admin-section">
+      <h2 class="section-title">📚 Upload Questions</h2>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div>
+          <h3 style="color: #00d9ff; margin-bottom: 1rem; font-size: 1rem;">📖 Tutorial Questions</h3>
+          <form method="post" action="{{ url_for('admin_upload', set_type='tutorial') }}" enctype="multipart/form-data">
+            <p style="color:#b3b3b3; margin-bottom:0.5rem;">Tutorial sets are shared across all levels — no level selection required.</p>
+            <input type="hidden" name="level" value="NOVAS" />
+            <input type="file" name="file" accept=".csv,.xlsx" required>
+            <button type="submit" class="primary">Upload Tutorial</button>
+          </form>
+        </div>
+        <div>
+          <h3 style="color: #bb86fc; margin-bottom: 1rem; font-size: 1rem;">🎯 Main Quiz Questions</h3>
+          <form method="post" action="{{ url_for('admin_upload', set_type='main') }}" enctype="multipart/form-data">
+            <label for="main-level">Select Level:</label>
+            <select id="main-level" name="level" required style="width:100%; padding:0.5rem; margin-bottom:1rem; border:1px solid #555; background:#222; color:#fff; border-radius:4px;">
+              <option value="">-- Choose Level --</option>
+              <option value="NOVAS">NOVAS (Year 3-4 • Beginner)</option>
+              <option value="VOYAGERS">VOYAGERS (Year 5-6 • Intermediate)</option>
+              <option value="TITANS">TITANS (Year 7-8 • Advanced)</option>
+              <option value="LEGENDS">LEGENDS (Year 9-10 • Master)</option>
+            </select>
+            <input type="file" name="file" accept=".csv,.xlsx" required>
+            <button type="submit" class="primary">Upload Main Quiz</button>
+          </form>
+        </div>
+      </div>
+      
+      <p class="muted" style="margin-top: 1rem; font-size: 0.85rem;">
+        CSV/XLSX Format: question_id, question_text, option_a, option_b, option_c, option_d, correct_option, image_url (optional)
+      </p>
+    </div>
+
+    <!-- Submissions -->
+    <div class="admin-section">
+      <h2 class="section-title">📋 Recent Submissions</h2>
+      
+      {% if submissions %}
+      <table class="submissions-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Student</th>
+            <th>Email</th>
+            <th>Score</th>
+            <th>Violations</th>
+            <th>Finished</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sub in submissions[:10] %}
+          <tr>
+            <td>#{{ sub.id }}</td>
+            <td>{{ sub.name }}</td>
+            <td>{{ sub.email }}</td>
+            <td>{{ sub.score|int }} / {{ sub.total_points|int }}</td>
+            <td>
+              {% if sub.violations_count > 0 %}
+                <span style="color: #ff5252;">⚠️ {{ sub.violations_count }}</span>
+              {% else %}
+                <span style="color: #00e676;">✓ None</span>
+              {% endif %}
+            </td>
+            <td>{{ sub.finished_at[:10] }}</td>
+            <td>
+              <a href="{{ url_for('admin_submission_details', submission_id=sub.id) }}" class="view-link">View</a>
+              &nbsp;|&nbsp;
+              <a href="{{ url_for('download_certificate', submission_id=sub.id, respondent_id=sub.respondent_id) }}" class="view-link">Certificate</a>
+              &nbsp;|&nbsp;
+              <a href="{{ url_for('download_results', submission_id=sub.id, respondent_id=sub.respondent_id) }}" class="view-link">Results</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="muted">No submissions yet</p>
+      {% endif %}
+    </div>
+  </main>
+</body>
+</html>

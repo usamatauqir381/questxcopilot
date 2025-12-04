@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Details - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { background: linear-gradient(135deg, #0f1419 0%, #0a0e13 100%); min-height: 100vh; padding: 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        h1 { color: #00d9ff; margin: 0; }
+        .back-btn { background: #1f88ff; color: white; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; }
+        .cert-btn { background: linear-gradient(135deg,#00c853 0%,#1de9b6 100%); color: white; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; margin-left: 0.5rem; }
+        .student-info { background: rgba(26,31,40,0.8); border: 1px solid rgba(0,217,255,0.2); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .info-label { color: #888; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.3rem; }
+        .info-value { color: #00d9ff; font-weight: 600; font-size: 1.1rem; }
+        .score-container { background: rgba(31,136,255,0.15); border-left: 4px solid #1f88ff; padding: 1rem; border-radius: 8px; }
+        .answers-table { width: 100%; border-collapse: collapse; background: rgba(26,31,40,0.8); border: 1px solid rgba(187,134,252,0.2); border-radius: 12px; }
+        .answers-table thead { background: rgba(31,136,255,0.15); }
+        .answers-table th { padding: 1rem; text-align: left; color: #00d9ff; font-weight: 600; border-bottom: 2px solid rgba(187,134,252,0.2); }
+        .answers-table td { padding: 1rem; border-bottom: 1px solid rgba(187,134,252,0.1); color: #b3b3b3; }
+        .answers-table tr:hover { background: rgba(187,134,252,0.05); }
+        .question-text { color: #e0e0e0; }
+        .correct-answer { color: #00e676; }
+        .wrong-answer { color: #ff5252; }
+        .badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .badge-correct { background: rgba(0,230,118,0.2); color: #00e676; }
+        .badge-wrong { background: rgba(255,82,82,0.2); color: #ff5252; }
+        .badge-level { background: rgba(31,136,255,0.2); color: #1f88ff; }
+        @media (max-width: 768px) { .info-grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Submission Details</h1>
+            <div>
+                <a href="{{ url_for('admin_submissions') }}" class="back-btn">← Back to Submissions</a>
+                <a href="{{ url_for('admin_download_certificate', submission_id=sub.id) }}" class="cert-btn">⬇️ Download Certificate</a>
+            </div>
+        </div>
+
+        <div class="student-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Student Name</div>
+                    <div class="info-value">{{ sub.name or 'N/A' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ sub.email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Level</div>
+                    <div><span class="badge badge-level">{{ sub.level or 'N/A' }}</span></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Completed</div>
+                    <div class="info-value">{{ sub.finished_at[:10] }}</div>
+                </div>
+            </div>
+            
+            <div class="score-container">
+                <div style="font-size: 0.9rem; color: #888; margin-bottom: 0.3rem;">Overall Score</div>
+                <div style="font-size: 1.8rem; color: #00d9ff; font-weight: 700;">{{ sub.score }}/{{ sub.total }} <span style="font-size: 1.2rem;">({{ sub.percentage }}%)</span></div>
+                {% if sub.percentage >= 60 %}
+                    <div style="margin-top: 0.5rem; color: #00e676; font-weight: 600;">✓ PASS</div>
+                {% else %}
+                    <div style="margin-top: 0.5rem; color: #ff5252; font-weight: 600;">✗ FAIL</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <h2 style="color: #00d9ff; margin-top: 2rem; margin-bottom: 1rem;">Answer Breakdown</h2>
+        
+        {% if details %}
+        <table class="answers-table">
+            <thead>
+                <tr>
+                    <th>Question #</th>
+                    <th>Question</th>
+                    <th>Your Answer</th>
+                    <th>Correct Answer</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in details %}
+                <tr>
+                    <td style="font-weight: 600; color: #00d9ff;">Q{{ loop.index }}</td>
+                    <td class="question-text" style="max-width: 300px;">{{ detail.text }}</td>
+                    <td>
+                        <strong>{{ detail.given_text or '(No answer)' }}</strong>
+                        <br><small style="color: #999;">Option {{ detail.given_key | upper if detail.given_key else 'N/A' }}</small>
+                    </td>
+                    <td class="correct-answer">
+                        <strong>Option {{ detail.correct_key | upper }}</strong>
+                        <br><small style="color: #888;">Correct answer</small>
+                    </td>
+                    <td>
+                        {% if detail.correct %}
+                            <span class="badge badge-correct">✓ Correct</span>
+                        {% else %}
+                            <span class="badge badge-wrong">✗ Wrong</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align: center; color: #888; padding: 2rem;">
+            <p>No answer details available.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

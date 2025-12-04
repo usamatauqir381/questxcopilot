@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Upload Questions</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .upload-section {
+      background: rgba(31, 136, 255, 0.05);
+      border: 2px dashed #1f88ff;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .level-selector {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .level-option {
+      padding: 1rem;
+      border: 2px solid #444;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .level-option:hover {
+      border-color: #bb86fc;
+      background: rgba(187, 134, 252, 0.1);
+    }
+    .level-option.selected {
+      border-color: #bb86fc;
+      background: rgba(187, 134, 252, 0.3);
+      font-weight: bold;
+    }
+    .level-option input {
+      display: none;
+    }
+    .preview-section {
+      background: rgba(0, 217, 255, 0.05);
+      border-left: 4px solid #00d9ff;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-top: 2rem;
+    }
+    .question-card {
+      background: rgba(31, 43, 56, 0.8);
+      border: 1px solid #444;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border-radius: 6px;
+    }
+    .question-card h4 {
+      color: #00d9ff;
+      margin-top: 0;
+    }
+    .question-card .qtext {
+      margin: 0.5rem 0;
+      color: #ccc;
+    }
+    .question-card .options {
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+    .question-card .option-item {
+      padding: 0.3rem 0;
+    }
+    .question-card .correct {
+      color: #00e676;
+      font-weight: bold;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .btn-approve {
+      background: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-approve:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 230, 118, 0.3);
+    }
+    .btn-approve:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="admin-container">
+    <h1>Upload Question File</h1>
+    
+    {% if error_msg %}
+      <div style="background: rgba(255, 82, 82, 0.1); border-left: 4px solid #ff5252; padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px; color: #ff5252;">
+        ❌ {{ error_msg }}
+      </div>
+    {% endif %}
+
+    {% if success_msg %}
+      <div style="background: rgba(0, 230, 118, 0.1); border-left: 4px solid #00e676; padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px; color: #00e676;">
+        ✅ {{ success_msg }}
+      </div>
+    {% endif %}
+
+    <!-- Upload Form -->
+    <div class="upload-section">
+      <h3>Step 1: Select Question File & Level</h3>
+      <p style="color: #aaa; margin-bottom: 1.5rem;">Upload a CSV or XLSX file with questions for a specific level.</p>
+      
+      <form id="uploadForm" method="post" enctype="multipart/form-data" action="{{ url_for('admin_upload_questions_preview') }}">
+        <div style="margin-bottom: 1rem;">
+          <label for="set_type">Question Type</label>
+          <select name="set_type" id="set_type" required style="width: 100%; padding: 0.8rem; margin-top: 0.5rem;">
+            <option value="main">Main Questions (graded)</option>
+            <option value="tutorial">Tutorial Questions (practice, shared)</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 1rem;" id="levelSelector">
+          <label>Select Level (for Main Questions only)</label>
+          <div class="level-selector">
+            <label class="level-option">
+              <input type="radio" name="level" value="NOVAS" required>
+              <span>🟦 NOVAS<br/><small>Year 3-4</small></span>
+            </label>
+            <label class="level-option">
+              <input type="radio" name="level" value="VOYAGERS" required>
+              <span>🟩 VOYAGERS<br/><small>Year 5-6</small></span>
+            </label>
+            <label class="level-option">
+              <input type="radio" name="level" value="TITANS" required>
+              <span>🟨 TITANS<br/><small>Year 7-8</small></span>
+            </label>
+            <label class="level-option">
+              <input type="radio" name="level" value="LEGENDS" required>
+              <span>🟪 LEGENDS<br/><small>Year 9-10</small></span>
+            </label>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label for="file">Choose CSV or XLSX File</label>
+          <input type="file" name="file" id="file" accept=".csv,.xlsx,.xls" required style="display: block; margin-top: 0.5rem;">
+          <p style="color: #888; font-size: 0.9rem; margin-top: 0.5rem;">
+            Expected columns: question_id, question_text, option_a, option_b, option_c, option_d, correct_option
+          </p>
+        </div>
+
+        <button type="submit" class="primary" style="width: 100%;">Preview Questions →</button>
+      </form>
+    </div>
+
+    <!-- Action Link Back -->
+    <div style="text-align: center;">
+      <a href="{{ url_for('admin_dashboard') }}" class="secondary">← Back to Dashboard</a>
+    </div>
+  </main>
+
+  <script>
+    // Show/hide level selector based on set_type
+    const setTypeSelect = document.getElementById('set_type');
+    const levelSelector = document.getElementById('levelSelector');
+
+    function toggleLevelSelector() {
+      if (setTypeSelect.value === 'tutorial') {
+        levelSelector.style.display = 'none';
+        // deselect level radio
+        document.querySelectorAll('input[name="level"]').forEach(r => r.checked = false);
+      } else {
+        levelSelector.style.display = 'block';
+      }
+    }
+
+    setTypeSelect.addEventListener('change', toggleLevelSelector);
+    toggleLevelSelector(); // Call on page load
+
+    // Highlight selected level
+    document.querySelectorAll('input[name="level"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        document.querySelectorAll('.level-option').forEach(opt => opt.classList.remove('selected'));
+        e.target.parentElement.classList.add('selected');
+      });
+    });
+  </script>
+</body>
+</html>

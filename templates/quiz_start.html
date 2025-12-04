@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ app_title }} — Start Quiz</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .confirmation-box {
+      background: rgba(187, 134, 252, 0.1);
+      border-left: 4px solid #bb86fc;
+      padding: 2rem;
+      border-radius: 8px;
+      margin: 2rem 0;
+    }
+    .confirmation-box h2 {
+      color: #bb86fc;
+      margin-top: 0;
+      font-size: 1.5rem;
+    }
+    .check-list {
+      list-style: none;
+      padding: 0;
+      margin: 1.5rem 0;
+    }
+    .check-list li {
+      padding: 0.75rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.1rem;
+    }
+    .check-list li:before {
+      content: "✓";
+      color: #00e676;
+      font-weight: bold;
+      font-size: 1.3rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+    <h1>🎯 Ready to Start the Real Quiz?</h1>
+    
+    <div style="background: rgba(0, 217, 255, 0.1); border-left: 4px solid #00d9ff; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; text-align: center;">
+      <p style="margin: 0; color: #00d9ff; font-weight: 600; font-size: 1.1rem;">Your Level: <strong>{{ level }}</strong></p>
+    </div>
+    
+    <div class="confirmation-box">
+      <h2>Instructions for the Real Quiz</h2>
+      <ul class="check-list">
+        <li>This is the GRADED quiz - your score will be recorded</li>
+        <li>You have a time limit per question</li>
+        <li>Answer questions carefully and honestly</li>
+        <li>Do NOT switch tabs or windows</li>
+        <li>If you switch tabs 3 times, the quiz will auto-submit immediately</li>
+        <li>Once the quiz auto-submits (or you submit), you will NOT be able to retake the quiz</li>
+        <li>Results and certificates are managed by administrators and are not visible to students</li>
+      </ul>
+    </div>
+
+    <p style="text-align: center; color: #ffb74d; font-weight: 600; margin: 1.5rem 0;">
+      ⚠️ Make sure you're ready before proceeding!
+    </p>
+
+    <form id="start-form" method="post" action="{{ url_for('start_real_test') }}" style="margin-top:2rem;">
+      <label style="display:flex; align-items:center; gap:0.5rem; font-weight:600;">
+        <input type="checkbox" id="confirm-checkbox"> I have read and understand the rules above. I understand switching tabs will auto-submit my quiz and I will not be allowed to retake it.
+      </label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <button id="start-btn" type="submit" class="primary" style="background: linear-gradient(135deg, #00e676 0%, #1de9b6 100%);" disabled>
+          ▶ Start Real Quiz Now
+        </button>
+        <form method="post" action="{{ url_for('login') }}">
+          <button type="submit" class="primary" style="background: linear-gradient(135deg, #888888 0%, #666666 100%);">
+            ⬅️ Cancel
+          </button>
+        </form>
+      </div>
+    </form>
+      <form method="post" action="{{ url_for('login') }}">
+        <button type="submit" class="primary" style="background: linear-gradient(135deg, #888888 0%, #666666 100%);">
+          ⬅️ Cancel
+        </button>
+      </form>
+    </div>
+  </main>
+  <script>
+    // Enable Start button only when checkbox is checked
+    const checkbox = document.getElementById('confirm-checkbox');
+    const startBtn = document.getElementById('start-btn');
+    if (checkbox && startBtn) {
+      checkbox.addEventListener('change', function() {
+        startBtn.disabled = !this.checked;
+      });
+    }
+    // Extra reinforcement: when leaving page before start, show warning
+    window.addEventListener('beforeunload', function(e) {
+      if (startBtn && !startBtn.disabled) {
+        // if user has confirmed but not yet started, allow navigation without extra prompt
+        return;
+      }
+      // no-op
+    });
+  </script>
+</body>
+</html>
